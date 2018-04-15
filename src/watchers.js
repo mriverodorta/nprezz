@@ -11,15 +11,15 @@ export default class PostsCompiler {
     const styler = new StylesCompiler(app);
     const ingnores = Constants.ignoredGlobs().concat(app.config.ignoreList || []);
 
-    Timer.start();
+    this.timer = new Timer();
     const watcher = chokidar.watch('**/*', { ignored: ingnores, ignoreInitial: true });
     watcher.on('all', (event, file) => {
       styler.compile(file);
       templater.compile(file);
     });
     watcher.on('ready', () => {
-      Timer.finish();
-      log.success('Warcher\'s ready', Timer.getFormattedLapse());
+      this.timer.finish();
+      log.success('Warcher\'s ready', this.timer.getFormattedLapse());
     });
   }
 }

@@ -14,6 +14,9 @@ export default class StylesCompiler {
   constructor(app) {
     this.app = app;
 
+    // Instantiatin new Timer
+    this.timer = new Timer();
+
     // regex for different types of styles
     this.sassType = /.sass|.scss/;
   }
@@ -37,7 +40,7 @@ export default class StylesCompiler {
 
   /**
    * Thest a file looking for the right style compiler
-   * @param {String} file 
+   * @param {String} file
    * @returns the compiler that should be be used.
    */
   formatFinder(file) {
@@ -66,7 +69,7 @@ export default class StylesCompiler {
       mqpacker: true,
       minifier: this.app.config.styles.minified || false,
     };
-    Timer.start();
+    this.timer.start();
     sassCompiler.render(sassOptions, (err, styles) => {
       if (err) { this.handleErrorSass(err); return; }
       if (styles.css.toString('utf8')) {
@@ -100,8 +103,8 @@ export default class StylesCompiler {
     fs.writeFile(file, styles, (err) => {
       if (err) log.error(err);
       else {
-        Timer.finish();
-        log.success('Styles compiled', Timer.getFormattedLapse());
+        this.timer.finish();
+        log.success('Styles compiled', this.timer.getFormattedLapse());
         this.app.bsreload();
       }
     });

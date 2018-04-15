@@ -42,19 +42,21 @@ var PostsCompiler = function () {
   _createClass(PostsCompiler, null, [{
     key: 'watch',
     value: function watch(app) {
+      var _this = this;
+
       var templater = new _templatesCompiler2.default(app);
       var styler = new _stylesCompiler2.default(app);
       var ingnores = _constants2.default.ignoredGlobs().concat(app.config.ignoreList || []);
 
-      _timer2.default.start();
+      this.timer = new _timer2.default();
       var watcher = _chokidar2.default.watch('**/*', { ignored: ingnores, ignoreInitial: true });
       watcher.on('all', function (event, file) {
         styler.compile(file);
         templater.compile(file);
       });
       watcher.on('ready', function () {
-        _timer2.default.finish();
-        _logger2.default.success('Warcher\'s ready', _timer2.default.getFormattedLapse());
+        _this.timer.finish();
+        _logger2.default.success('Warcher\'s ready', _this.timer.getFormattedLapse());
       });
     }
   }]);

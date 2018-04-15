@@ -1,49 +1,55 @@
-'use strict';
-const moment = require('moment');
-const log = require('./logger');
-const chalk = require('chalk');
+import moment from 'moment';
+import chalk from 'chalk';
+import Log from './logger';
 
-let begin, end = null;
 
-module.exports = {
-  begin: null,
-  end: null,
+export default class Timer {
+  constructor() {
+    this.begin = moment();
+  }
+
+  /**
+   * Start the timer
+   */
   start() {
     this.begin = moment();
-    return;
-  },
+  }
+
+  /**
+   * Finish the timer
+   */
   finish() {
     this.end = moment();
-    return;
-  },
+  }
+
   getLapse() {
     if (this.begin && this.end) {
       const lapse = this.end - this.begin;
       const duration = moment.duration(lapse);
       if (duration.minutes() > 0) {
-        return duration.minutes() + 'm';
+        return `${duration.minutes()}m`;
       } else if (duration.seconds() > 0) {
-        return duration.seconds() + 's';
-      } else {
-        return duration.milliseconds() + 'ms';
+        return `${duration.seconds()}s`;
       }
-    } else {
-      log.error('Timer is not finished yet.');
-      return false;
+      return `${duration.milliseconds()}ms`;
     }
-  },
+    Log.error('Timer is not finished yet.');
+    return false;
+  }
+
   getFormattedLapse() {
     if (this.getLapse()) {
-      return chalk.white.bgGreen(' ' +  addSpaces(this.getLapse()) + ' ');
-    } else return false;
+      return chalk.white.bgGreen(` ${this.addSpaces(this.getLapse())} `);
+    }
+    return false;
   }
-}
 
-function addSpaces(text) {
-  let rest = 8 - text.length;
-  let spaces = '';
-  for(let index = 0; index < (rest-1); index++) {
-    spaces += ' ';
+  addSpaces(text) {
+    const rest = 8 - text.length;
+    let spaces = '';
+    for (let index = 0; index < (rest - 1); index += 1) {
+      spaces += ' ';
+    }
+    return `${spaces}${text} `;
   }
-  return spaces + text + ' ';
 }

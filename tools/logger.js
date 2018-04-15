@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-exports.log = log;
+exports.logmsg = logmsg;
 
 var _logSymbols = require('log-symbols');
 
@@ -24,7 +24,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function log(msg, type, time) {
+function logmsg(msg, type, time) {
   var theTime = (0, _moment2.default)();
   if (Array.isArray(msg)) {
     msg.forEach(function (one) {
@@ -43,22 +43,22 @@ var Logger = function () {
   _createClass(Logger, null, [{
     key: 'error',
     value: function error(msg, time) {
-      log(msg, 'error', time);
+      logmsg(msg, 'error', time);
     }
   }, {
     key: 'success',
     value: function success(msg, time) {
-      log(msg, 'success', time);
+      logmsg(msg, 'success', time);
     }
   }, {
     key: 'warn',
     value: function warn(msg, time) {
-      log(msg, 'warning', time);
+      logmsg(msg, 'warning', time);
     }
   }, {
     key: 'info',
     value: function info(msg, time) {
-      log(msg, 'info', time);
+      logmsg(msg, 'info', time);
     }
   }, {
     key: 'human',

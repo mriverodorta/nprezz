@@ -10,6 +10,9 @@ export default class PugCompiler {
   constructor(app) {
     this.app = app;
 
+    // Instantiating new Timer
+    this.timer = new Timer();
+
     // regex for different types of templates
     this.pugType = /.pug|.jade/;
     this.underscores = /\\_[a-zA-Z0-9]/;
@@ -38,7 +41,7 @@ export default class PugCompiler {
       basedir: this.app.config.pug.basedir || './',
     };
     if (this.haveUnderscores(file)) return;
-    Timer.start();
+    this.timer.start();
     const template = pug.renderFile(file, _.merge(pugOptions, this.app));
     this.saveTemplate(template, file, this.app);
   }
@@ -54,8 +57,8 @@ export default class PugCompiler {
     fs.writeFile(newFile, template, (err) => {
       if (err) log.error(err);
       else {
-        Timer.finish();
-        log.success(`Template ${path.basename(file)} was compiled.`, Timer.getFormattedLapse());
+        this.timer.finish();
+        log.success(`Template ${path.basename(file)} was compiled.`, this.timer.getFormattedLapse());
         this.app.bsreload();
       }
     });

@@ -39,6 +39,9 @@ var ConfigLoader = function () {
     _classCallCheck(this, ConfigLoader);
 
     this.app = app;
+
+    // Instantiating new Timer
+    this.timer = new _timer2.default();
   }
 
   /**
@@ -52,7 +55,7 @@ var ConfigLoader = function () {
     value: function load() {
       var configFile = this.app.cwd + '/config.json';
       if (_fsExtra2.default.pathExistsSync(configFile)) {
-        _timer2.default.start();
+        this.timer.start();
         try {
           this.app.config = JSON.parse(_fsExtra2.default.readFileSync(configFile).toString());
         } catch (error) {
@@ -63,8 +66,8 @@ var ConfigLoader = function () {
           }
           process.exit();
         }
-        _timer2.default.finish();
-        _logger2.default.success('Configuration Loaded', _timer2.default.getFormattedLapse());
+        this.timer.finish();
+        _logger2.default.success('Configuration Loaded', this.timer.getFormattedLapse());
       } else {
         _logger2.default.info('Este directorio no contiene un proyecto NPrezz o existen problemas con el archivo de configuracion.');
         process.exit();

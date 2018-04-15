@@ -1,51 +1,91 @@
 'use strict';
 
-var moment = require('moment');
-var log = require('./logger');
-var chalk = require('chalk');
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-var begin = void 0,
-    end = null;
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-module.exports = {
-  begin: null,
-  end: null,
-  start: function start() {
-    this.begin = moment();
-    return;
-  },
-  finish: function finish() {
-    this.end = moment();
-    return;
-  },
-  getLapse: function getLapse() {
-    if (this.begin && this.end) {
-      var lapse = this.end - this.begin;
-      var duration = moment.duration(lapse);
-      if (duration.minutes() > 0) {
-        return duration.minutes() + 'm';
-      } else if (duration.seconds() > 0) {
-        return duration.seconds() + 's';
-      } else {
+var _moment = require('moment');
+
+var _moment2 = _interopRequireDefault(_moment);
+
+var _chalk = require('chalk');
+
+var _chalk2 = _interopRequireDefault(_chalk);
+
+var _logger = require('./logger');
+
+var _logger2 = _interopRequireDefault(_logger);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Timer = function () {
+  function Timer() {
+    _classCallCheck(this, Timer);
+
+    this.begin = (0, _moment2.default)();
+  }
+
+  /**
+   * Start the timer
+   */
+
+
+  _createClass(Timer, [{
+    key: 'start',
+    value: function start() {
+      this.begin = (0, _moment2.default)();
+    }
+
+    /**
+     * Finish the timer
+     */
+
+  }, {
+    key: 'finish',
+    value: function finish() {
+      this.end = (0, _moment2.default)();
+    }
+  }, {
+    key: 'getLapse',
+    value: function getLapse() {
+      if (this.begin && this.end) {
+        var lapse = this.end - this.begin;
+        var duration = _moment2.default.duration(lapse);
+        if (duration.minutes() > 0) {
+          return duration.minutes() + 'm';
+        } else if (duration.seconds() > 0) {
+          return duration.seconds() + 's';
+        }
         return duration.milliseconds() + 'ms';
       }
-    } else {
-      log.error('Timer is not finished yet.');
+      _logger2.default.error('Timer is not finished yet.');
       return false;
     }
-  },
-  getFormattedLapse: function getFormattedLapse() {
-    if (this.getLapse()) {
-      return chalk.white.bgGreen(' ' + addSpaces(this.getLapse()) + ' ');
-    } else return false;
-  }
-};
+  }, {
+    key: 'getFormattedLapse',
+    value: function getFormattedLapse() {
+      if (this.getLapse()) {
+        return _chalk2.default.white.bgGreen(' ' + this.addSpaces(this.getLapse()) + ' ');
+      }
+      return false;
+    }
+  }, {
+    key: 'addSpaces',
+    value: function addSpaces(text) {
+      var rest = 8 - text.length;
+      var spaces = '';
+      for (var index = 0; index < rest - 1; index += 1) {
+        spaces += ' ';
+      }
+      return '' + spaces + text + ' ';
+    }
+  }]);
 
-function addSpaces(text) {
-  var rest = 8 - text.length;
-  var spaces = '';
-  for (var index = 0; index < rest - 1; index++) {
-    spaces += ' ';
-  }
-  return spaces + text + ' ';
-}
+  return Timer;
+}();
+
+exports.default = Timer;

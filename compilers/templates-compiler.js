@@ -40,6 +40,9 @@ var PugCompiler = function () {
 
     this.app = app;
 
+    // Instantiating new Timer
+    this.timer = new _timer2.default();
+
     // regex for different types of templates
     this.pugType = /.pug|.jade/;
     this.underscores = /\\_[a-zA-Z0-9]/;
@@ -72,7 +75,7 @@ var PugCompiler = function () {
         basedir: this.app.config.pug.basedir || './'
       };
       if (this.haveUnderscores(file)) return;
-      _timer2.default.start();
+      this.timer.start();
       var template = _pug2.default.renderFile(file, _lodash2.default.merge(pugOptions, this.app));
       this.saveTemplate(template, file, this.app);
     }
@@ -91,8 +94,8 @@ var PugCompiler = function () {
       _fsExtra2.default.ensureDirSync(_path2.default.dirname(newFile));
       _fsExtra2.default.writeFile(newFile, template, function (err) {
         if (err) _logger2.default.error(err);else {
-          _timer2.default.finish();
-          _logger2.default.success('Template ' + _path2.default.basename(file) + ' was compiled.', _timer2.default.getFormattedLapse());
+          _this.timer.finish();
+          _logger2.default.success('Template ' + _path2.default.basename(file) + ' was compiled.', _this.timer.getFormattedLapse());
           _this.app.bsreload();
         }
       });

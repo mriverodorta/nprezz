@@ -11,6 +11,9 @@ export default class ConfigLoader {
    */
   constructor(app) {
     this.app = app;
+
+    // Instantiating new Timer
+    this.timer = new Timer();
   }
 
   /**
@@ -20,7 +23,7 @@ export default class ConfigLoader {
   load() {
     const configFile = `${this.app.cwd}/config.json`;
     if (fs.pathExistsSync(configFile)) {
-      Timer.start();
+      this.timer.start();
       try {
         this.app.config = JSON.parse(fs.readFileSync(configFile).toString());
       } catch (error) {
@@ -31,8 +34,8 @@ export default class ConfigLoader {
         }
         process.exit();
       }
-      Timer.finish();
-      log.success('Configuration Loaded', Timer.getFormattedLapse());
+      this.timer.finish();
+      log.success('Configuration Loaded', this.timer.getFormattedLapse());
     } else {
       log.info('Este directorio no contiene un proyecto NPrezz o existen problemas con el archivo de configuracion.');
       process.exit();

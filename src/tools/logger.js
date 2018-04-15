@@ -2,7 +2,7 @@ import symbols from 'log-symbols';
 import chalk from 'chalk';
 import moment from 'moment';
 
-export function log(msg, type, time) {
+export function logmsg(msg, type, time) {
   const theTime = moment();
   if (Array.isArray(msg)) {
     msg.forEach(one => console.log(`${chalk.bgBlueBright.bold(` ${symbols[type]} `)} ${(time || chalk.white.bgGreen(` ${theTime.format('HH:mm:ss')} `))} ${one}`));
@@ -13,16 +13,16 @@ export function log(msg, type, time) {
 
 export default class Logger {
   static error(msg, time) {
-    log(msg, 'error', time);
+    logmsg(msg, 'error', time);
   }
   static success(msg, time) {
-    log(msg, 'success', time);
+    logmsg(msg, 'success', time);
   }
   static warn(msg, time) {
-    log(msg, 'warning', time);
+    logmsg(msg, 'warning', time);
   }
   static info(msg, time) {
-    log(msg, 'info', time);
+    logmsg(msg, 'info', time);
   }
   static human(msg) {
     try {

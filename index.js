@@ -33,11 +33,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var bs = _browserSync2.default.create('srv');
 
-_logger2.default.error('lalala');
-_logger2.default.success('lalala');
-_logger2.default.warn('lalala');
-_logger2.default.info('lalala');
-
 // App Object
 var app = {
   cwd: process.cwd(),

@@ -44,6 +44,9 @@ var StylesCompiler = function () {
 
     this.app = app;
 
+    // Instantiatin new Timer
+    this.timer = new _timer2.default();
+
     // regex for different types of styles
     this.sassType = /.sass|.scss/;
   }
@@ -71,7 +74,7 @@ var StylesCompiler = function () {
 
     /**
      * Thest a file looking for the right style compiler
-     * @param {String} file 
+     * @param {String} file
      * @returns the compiler that should be be used.
      */
 
@@ -108,7 +111,7 @@ var StylesCompiler = function () {
         mqpacker: true,
         minifier: this.app.config.styles.minified || false
       };
-      _timer2.default.start();
+      this.timer.start();
       _nodeSass2.default.render(sassOptions, function (err, styles) {
         if (err) {
           _this.handleErrorSass(err);return;
@@ -151,8 +154,8 @@ var StylesCompiler = function () {
       _fsExtra2.default.ensureDirSync(_path2.default.dirname(file));
       _fsExtra2.default.writeFile(file, styles, function (err) {
         if (err) _logger2.default.error(err);else {
-          _timer2.default.finish();
-          _logger2.default.success('Styles compiled', _timer2.default.getFormattedLapse());
+          _this2.timer.finish();
+          _logger2.default.success('Styles compiled', _this2.timer.getFormattedLapse());
           _this2.app.bsreload();
         }
       });

@@ -1,17 +1,12 @@
 #!/usr/bin/env node
 import browserSync from 'browser-sync';
 import path from 'path';
-import log from './tools/logger';
+import Log from './tools/logger';
 import Watchers from './watchers';
 import ConfigLoader from './tools/config-loader';
 import PostsCompiler from './compilers/posts-compiler';
 
 const bs = browserSync.create('srv');
-
-log.error('lalala');
-log.success('lalala');
-log.warn('lalala');
-log.info('lalala');
 
 // App Object
 const app = {
@@ -22,7 +17,7 @@ const app = {
   categories: [],
   bsreload() {
     if (this.bsready) app.bs.reload();
-    else log.error('BrowserSync instance not ready to reload');
+    else Log.error('BrowserSync instance not ready to reload');
   },
 };
 
@@ -31,7 +26,7 @@ const config = new ConfigLoader(app);
 config.load();
 if (!app.config) process.exit();
 config.watch(app);
-log.info('Starting...');
+Log.info('Starting...');
 
 // Posts watcher
 const Posts = new PostsCompiler(app);
@@ -52,14 +47,12 @@ const syncOpt = {
 
 bs.init(syncOpt, () => {
   app.bsready = true;
-  log.success(`Server Ready on port: ${syncOpt.port}`);
+  Log.success(`Server Ready on port: ${syncOpt.port}`);
 });
 app.bs = bs;
 
 // Start SRC Watchers
 Watchers.watch(app);
 
-
 // Export the App object so any file can access it's properties.
 export default app;
-
