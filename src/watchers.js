@@ -1,8 +1,9 @@
 import chokidar from 'chokidar';
+import fs from 'fs-extra';
 import StylesCompiler from './compilers/styles-compiler';
 import TemplatesCompiler from './compilers/templates-compiler';
 import Constants from './constants';
-import log from './tools/logger';
+import Log from './tools/logger';
 import Timer from './tools/timer';
 
 export default class PostsCompiler {
@@ -14,12 +15,13 @@ export default class PostsCompiler {
     this.timer = new Timer();
     const watcher = chokidar.watch('**/*', { ignored: ingnores, ignoreInitial: true });
     watcher.on('all', (event, file) => {
+      if (!fs.pathExistsSync(file)) return;
       styler.compile(file);
       templater.compile(file);
     });
     watcher.on('ready', () => {
       this.timer.finish();
-      log.success('Warcher\'s ready', this.timer.getFormattedLapse());
+      Log.success('Warcher\'s ready', this.timer.getFormattedLapse());
     });
   }
 }

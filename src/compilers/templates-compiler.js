@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import pug from 'pug';
 import _ from 'lodash';
-import log from '../tools/logger';
+import Log from '../tools/logger';
 import Timer from '../tools/timer';
 
 
@@ -13,9 +13,15 @@ export default class PugCompiler {
     // Instantiating new Timer
     this.timer = new Timer();
 
+    // Pug Options
+    this.pugOptions = {
+      pretty: app.config.pug.pretty || true,
+      basedir: app.config.pug.basedir || './',
+    };
+
     // regex for different types of templates
     this.pugType = /.pug|.jade/;
-    this.underscores = /\\_[a-zA-Z0-9]/;
+    this.underscores = /^_/;
   }
 
   compile(file) {
@@ -30,24 +36,33 @@ export default class PugCompiler {
     } else this.compilePug(file);
   }
 
+  compilePost(meta) {
+    const templateFile = meta.template || this.app.config.posts.template || '_single.pug';
+    // const format = this.formatFinder(templateFile);
+    this.timer.start();
+    if (!fs.pathExistsSync(templateFile)) {
+      Log.error(`The posts template ${templateFile} does not exist.`);
+    } else {
+      this.app.post = meta;
+      const template = pug.renderFile(templateFile, _.merge(this.pugOptions, this.app));
+      this.saveTemplate(template, meta.permalink);
+    }
+  }
+
   formatFinder(file) {
     if (this.pugType.test(file)) return 'pug';
     return false;
   }
 
   compilePug(file) {
-    const pugOptions = {
-      pretty: this.app.config.pug.pretty || true,
-      basedir: this.app.config.pug.basedir || './',
-    };
     if (this.haveUnderscores(file)) return;
     this.timer.start();
-    const template = pug.renderFile(file, _.merge(pugOptions, this.app));
-    this.saveTemplate(template, file, this.app);
+    const template = pug.renderFile(file, _.merge(this.pugOptions, this.app));
+    this.saveTemplate(template, file);
   }
 
   haveUnderscores(name) {
-    return this.underscores.test(name);
+    return this.underscores.test(path.basename(name));
   }
 
   saveTemplate(template, file) {
@@ -55,10 +70,10 @@ export default class PugCompiler {
     const newFile = this.newPath(file, base);
     fs.ensureDirSync(path.dirname(newFile));
     fs.writeFile(newFile, template, (err) => {
-      if (err) log.error(err);
+      if (err) Log.error(err);
       else {
         this.timer.finish();
-        log.success(`Template ${path.basename(file)} was compiled.`, this.timer.getFormattedLapse());
+        Log.success(`Template ${path.basename(file)} was compiled.`, this.timer.getFormattedLapse());
         this.app.bsreload();
       }
     });

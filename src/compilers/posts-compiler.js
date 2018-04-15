@@ -3,9 +3,12 @@ import path from 'path';
 import fs from 'fs-extra';
 import slug from 'slug';
 import _ from 'lodash';
+import marked from 'marked';
+import moment from 'moment';
 import Constants from '../constants';
-import log from '../tools/logger';
+import Log from '../tools/logger';
 import Errors from '../tools/errors';
+import TemplatesCompiler from './templates-compiler';
 
 export default class PostsCompiler {
   /**
@@ -15,12 +18,14 @@ export default class PostsCompiler {
   constructor(app) {
     this.app = app;
     this.ingnores = _.concat(Constants.ignoredGlobs(), (app.config.ignoreList || []));
+
+    this.templateCompiler = new TemplatesCompiler(app);
   }
 
   watch() {
     const watcher = chokidar.watch([
-      `${(this.app.config.postDir || '_posts')}/**/*.md`,
-      `${(this.app.config.postDir || '_posts')}/**/*.markdown`,
+      `${(this.app.config.posts.dir || '_posts')}/**/*.md`,
+      `${(this.app.config.posts.dir || '_posts')}/**/*.markdown`,
     ], { ignored: this.ingnores });
 
     watcher.on('all', (e, file) => {
@@ -48,6 +53,17 @@ export default class PostsCompiler {
         return;
       }
 
+      // Set the author
+      if (!meta.author && this.app.config.author) {
+        meta.author = this.app.config.author;
+      } else {
+        meta.author = {};
+        meta.author.name = 'No Author';
+      }
+
+      // set the date as a MomentJS instance
+      meta.date = moment(meta.date);
+
       // Extract Tags
       if (meta.tags) {
         meta.tags.forEach((tag) => {
@@ -63,16 +79,28 @@ export default class PostsCompiler {
           this.app.categories[slug(cat.toLowerCase())] = cat;
         });
       }
-      meta.content = split[1];
+
+      // Setting the post content
+      meta.content = marked(split[1]);
+
+      // Setting the post Slug
       meta.slug = slug(meta.title.toLowerCase());
+
+      // Build permalink
+      meta.permalink = this.buildPermalink(meta);
+
       const cached = _.findIndex(this.app.posts, { pid: meta.pid });
       if (cached > 0) _.pullAt(this.app.posts, cached);
       this.app.posts.push(meta);
+
+      // Compile the post
+      this.templateCompiler.compilePost(meta);
+
       // log.success(`Post ${meta.title} was reloaded.`);
     } catch (error) {
-      log.error(error);
+      Log.error(error);
       // log.error('Error loading metadata as JSON in');
-      log.error(file);
+      Log.error(file);
     }
   }
 
@@ -87,5 +115,44 @@ export default class PostsCompiler {
     const pid = Number.parseInt(filename[0], 10);
     if (Number.isInteger(pid)) return pid;
     return false;
+  }
+
+  buildPermalink(meta) {
+    let permalink = meta.permalink || this.app.config.permalink || '/post/%slug%';
+    const tags = {
+      year: new RegExp('%year%', 'g'),
+      month: new RegExp('%month%', 'g'),
+      day: new RegExp('%day%', 'g'),
+      hour: new RegExp('%hour%', 'g'),
+      minute: new RegExp('%minute%', 'g'),
+      second: new RegExp('%second%', 'g'),
+      pid: new RegExp('%pid%', 'g'),
+      slug: new RegExp('%slug%', 'g'),
+      category: new RegExp('%category%', 'g'),
+      author: new RegExp('%author%', 'g'),
+    };
+    const tagsValues = {
+      year: meta.date.format('YYYY'),
+      month: meta.date.format('MM'),
+      day: meta.date.format('DD'),
+      hour: meta.date.format('HH'),
+      minute: meta.date.format('mm'),
+      second: meta.date.format('ss'),
+      pid: meta.pid,
+      slug: meta.slug,
+      category: slug((typeof meta.categories === 'string' ? meta.categories : meta.categories[0])),
+      author: slug(meta.author.name),
+    };
+
+    _.forEach(tags, (regex, key) => {
+      permalink = permalink.replace(regex, tagsValues[key]);
+    });
+    if (permalink.charAt((permalink.length - 1)) === '/') {
+      permalink += 'index.html';
+    } else {
+      permalink += '.html';
+    }
+    console.log(permalink);
+    return permalink;
   }
 }

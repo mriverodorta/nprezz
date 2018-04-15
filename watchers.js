@@ -10,6 +10,10 @@ var _chokidar = require('chokidar');
 
 var _chokidar2 = _interopRequireDefault(_chokidar);
 
+var _fsExtra = require('fs-extra');
+
+var _fsExtra2 = _interopRequireDefault(_fsExtra);
+
 var _stylesCompiler = require('./compilers/styles-compiler');
 
 var _stylesCompiler2 = _interopRequireDefault(_stylesCompiler);
@@ -51,6 +55,7 @@ var PostsCompiler = function () {
       this.timer = new _timer2.default();
       var watcher = _chokidar2.default.watch('**/*', { ignored: ingnores, ignoreInitial: true });
       watcher.on('all', function (event, file) {
+        if (!_fsExtra2.default.pathExistsSync(file)) return;
         styler.compile(file);
         templater.compile(file);
       });

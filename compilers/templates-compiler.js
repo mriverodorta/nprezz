@@ -43,9 +43,15 @@ var PugCompiler = function () {
     // Instantiating new Timer
     this.timer = new _timer2.default();
 
+    // Pug Options
+    this.pugOptions = {
+      pretty: app.config.pug.pretty || true,
+      basedir: app.config.pug.basedir || './'
+    };
+
     // regex for different types of templates
     this.pugType = /.pug|.jade/;
-    this.underscores = /\\_[a-zA-Z0-9]/;
+    this.underscores = /^_/;
   }
 
   _createClass(PugCompiler, [{
@@ -62,6 +68,20 @@ var PugCompiler = function () {
       } else this.compilePug(file);
     }
   }, {
+    key: 'compilePost',
+    value: function compilePost(meta) {
+      var templateFile = meta.template || this.app.config.posts.template || '_single.pug';
+      // const format = this.formatFinder(templateFile);
+      this.timer.start();
+      if (!_fsExtra2.default.pathExistsSync(templateFile)) {
+        _logger2.default.error('The posts template ' + templateFile + ' does not exist.');
+      } else {
+        this.app.post = meta;
+        var template = _pug2.default.renderFile(templateFile, _lodash2.default.merge(this.pugOptions, this.app));
+        this.saveTemplate(template, meta.permalink);
+      }
+    }
+  }, {
     key: 'formatFinder',
     value: function formatFinder(file) {
       if (this.pugType.test(file)) return 'pug';
@@ -70,19 +90,15 @@ var PugCompiler = function () {
   }, {
     key: 'compilePug',
     value: function compilePug(file) {
-      var pugOptions = {
-        pretty: this.app.config.pug.pretty || true,
-        basedir: this.app.config.pug.basedir || './'
-      };
       if (this.haveUnderscores(file)) return;
       this.timer.start();
-      var template = _pug2.default.renderFile(file, _lodash2.default.merge(pugOptions, this.app));
-      this.saveTemplate(template, file, this.app);
+      var template = _pug2.default.renderFile(file, _lodash2.default.merge(this.pugOptions, this.app));
+      this.saveTemplate(template, file);
     }
   }, {
     key: 'haveUnderscores',
     value: function haveUnderscores(name) {
-      return this.underscores.test(name);
+      return this.underscores.test(_path2.default.basename(name));
     }
   }, {
     key: 'saveTemplate',
