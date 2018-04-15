@@ -1,38 +1,69 @@
 #!/usr/bin/env node
 'use strict';
-const Timer = require('./tools/timer');
-const log = require('./tools/logger');
-const watch = require('./watchers');
-const configLoader = require('./tools/config-loader');
-let browserSync = require('browser-sync').create('srv');
-const path = require('path');
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _browserSync = require('browser-sync');
+
+var _browserSync2 = _interopRequireDefault(_browserSync);
+
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
+
+var _logger = require('./tools/logger');
+
+var _logger2 = _interopRequireDefault(_logger);
+
+var _watchers = require('./watchers');
+
+var _watchers2 = _interopRequireDefault(_watchers);
+
+var _configLoader = require('./tools/config-loader');
+
+var _configLoader2 = _interopRequireDefault(_configLoader);
+
+var _postsCompiler = require('./compilers/posts-compiler');
+
+var _postsCompiler2 = _interopRequireDefault(_postsCompiler);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var bs = _browserSync2.default.create('srv');
+
+_logger2.default.error('lalala');
+_logger2.default.success('lalala');
+_logger2.default.warn('lalala');
+_logger2.default.info('lalala');
 
 // App Object
-let app = {
+var app = {
   cwd: process.cwd(),
   bsready: false,
   posts: [],
   tags: [],
   categories: [],
-  bsreload(){
-    if (this.bsready) app.bs.reload();
-    else log.error('BrowserSync instance not ready to reload');
+  bsreload: function bsreload() {
+    if (this.bsready) app.bs.reload();else _logger2.default.error('BrowserSync instance not ready to reload');
   }
-}
-
+};
 
 // Load project configuration file and watch it for changes
-configLoader.load(app);
+var config = new _configLoader2.default(app);
+config.load();
 if (!app.config) process.exit();
-configLoader.watch(app);
-log.info('Starting...')
+config.watch(app);
+_logger2.default.info('Starting...');
 
-const posts = require('./posts/posts')(app);
-posts.watch();
+// Posts watcher
+var Posts = new _postsCompiler2.default(app);
+Posts.watch();
 
-const syncOpt = {
+var syncOpt = {
   server: {
-    baseDir: path.normalize(app.cwd + '/' +(app.config.server.path || app.config.dist || '_dist')),
+    baseDir: _path2.default.normalize(app.cwd + '/' + (app.config.server.path || app.config.dist || '_dist')),
     index: 'index.html'
   },
   port: app.config.server.port || 3000,
@@ -41,18 +72,16 @@ const syncOpt = {
   notify: app.config.server.notifyOnChanges || true
 };
 
-// browserSync.watch('dist/**/*').on("all", browserSync.reload);
+// bs.watch('dist/**/*').on("all", browserSync.reload);
 
-browserSync.init(syncOpt, ()=> {
+bs.init(syncOpt, function () {
   app.bsready = true;
-  log.success(`Server Ready on port: ${syncOpt.port}`);
+  _logger2.default.success('Server Ready on port: ' + syncOpt.port);
 });
-app.bs = browserSync;
+app.bs = bs;
 
 // Start SRC Watchers
-watch(app);
-
+_watchers2.default.watch(app);
 
 // Export the App object so any file can access it's properties.
-module.exports = app;
-
+exports.default = app;

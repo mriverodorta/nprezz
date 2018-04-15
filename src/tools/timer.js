@@ -1,27 +1,25 @@
 'use strict';
+const moment = require('moment');
+const log = require('./logger');
+const chalk = require('chalk');
 
-var moment = require('moment');
-var log = require('./logger');
-var chalk = require('chalk');
-
-var begin = void 0,
-    end = null;
+let begin, end = null;
 
 module.exports = {
   begin: null,
   end: null,
-  start: function start() {
+  start() {
     this.begin = moment();
     return;
   },
-  finish: function finish() {
+  finish() {
     this.end = moment();
     return;
   },
-  getLapse: function getLapse() {
+  getLapse() {
     if (this.begin && this.end) {
-      var lapse = this.end - this.begin;
-      var duration = moment.duration(lapse);
+      const lapse = this.end - this.begin;
+      const duration = moment.duration(lapse);
       if (duration.minutes() > 0) {
         return duration.minutes() + 'm';
       } else if (duration.seconds() > 0) {
@@ -34,17 +32,17 @@ module.exports = {
       return false;
     }
   },
-  getFormattedLapse: function getFormattedLapse() {
+  getFormattedLapse() {
     if (this.getLapse()) {
-      return chalk.white.bgGreen(' ' + addSpaces(this.getLapse()) + ' ');
+      return chalk.white.bgGreen(' ' +  addSpaces(this.getLapse()) + ' ');
     } else return false;
   }
-};
+}
 
 function addSpaces(text) {
-  var rest = 8 - text.length;
-  var spaces = '';
-  for (var index = 0; index < rest - 1; index++) {
+  let rest = 8 - text.length;
+  let spaces = '';
+  for(let index = 0; index < (rest-1); index++) {
     spaces += ' ';
   }
   return spaces + text + ' ';
