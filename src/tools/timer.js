@@ -46,10 +46,6 @@ export default class Timer {
 
   addSpaces(text) {
     const rest = 8 - text.length;
-    let spaces = '';
-    for (let index = 0; index < (rest - 1); index += 1) {
-      spaces += ' ';
-    }
-    return `${spaces}${text} `;
+    return `${text.padStart(rest)} `;
   }
 }
