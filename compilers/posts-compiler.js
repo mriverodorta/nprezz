@@ -72,7 +72,7 @@ var PostsCompiler = function () {
     this.templateCompiler = new _templatesCompiler2.default(app);
     this.matterOptions = {
       excerpt: true,
-      excerpt_separator: this.app.config.excerpt.separator || '<!--more-->'
+      excerpt_separator: this.app.config.excerpt ? this.app.config.excerpt.separator || '<!--more-->' : '<!--more-->'
     };
   }
 
@@ -104,8 +104,19 @@ var PostsCompiler = function () {
         var meta = raw.data;
         // Setting the content
         meta.content = raw.content;
+
         // Setting the excerpt
-        meta.excerpt = raw.excrept || '';
+        if (meta.excerpt) {
+          try {
+            meta.excerpt = (0, _marked2.default)(meta.excerpt);
+          } catch (e) {/* nothing to do */}
+        } else if (raw.excerpt) {
+          try {
+            meta.excerpt = (0, _marked2.default)(raw.excerpt);
+          } catch (e) {
+            meta.excerpt = raw.excrept;
+          }
+        }
 
         // Check if there is a minimun of frontmatter (title & date)
         if (!meta.title || !meta.date) {
@@ -231,7 +242,6 @@ var PostsCompiler = function () {
       } else {
         permalink += '.html';
       }
-      console.log(permalink);
       return permalink;
     }
   }]);

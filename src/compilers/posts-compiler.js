@@ -23,7 +23,7 @@ export default class PostsCompiler {
     this.templateCompiler = new TemplatesCompiler(app);
     this.matterOptions = {
       excerpt: true,
-      excerpt_separator: this.app.config.excerpt.separator || '<!--more-->',
+      excerpt_separator: this.app.config.excerpt ? this.app.config.excerpt.separator || '<!--more-->' : '<!--more-->',
     };
   }
 
@@ -51,8 +51,17 @@ export default class PostsCompiler {
       const meta = raw.data;
       // Setting the content
       meta.content = raw.content;
+
       // Setting the excerpt
-      meta.excerpt = raw.excrept || '';
+      if (meta.excerpt) {
+        try { meta.excerpt = marked(meta.excerpt); } catch (e) { /* nothing to do */ }
+      } else if (raw.excerpt) {
+        try {
+          meta.excerpt = marked(raw.excerpt);
+        } catch (e) {
+          meta.excerpt = raw.excrept;
+        }
+      }
 
       // Check if there is a minimun of frontmatter (title & date)
       if (!meta.title || !meta.date) {
@@ -64,7 +73,7 @@ export default class PostsCompiler {
       if (!meta.id && this.getId(file)) {
         meta.id = this.getId(file);
       }
-
+   
       // Post widout id will not be proccesed
       if (!meta.id) {
         Errors.missingPostId(file, meta);
@@ -175,7 +184,6 @@ export default class PostsCompiler {
     } else {
       permalink += '.html';
     }
-    console.log(permalink);
     return permalink;
   }
 }
