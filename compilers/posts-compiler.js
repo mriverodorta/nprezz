@@ -26,6 +26,10 @@ var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
+var _grayMatter = require('gray-matter');
+
+var _grayMatter2 = _interopRequireDefault(_grayMatter);
+
 var _marked = require('marked');
 
 var _marked2 = _interopRequireDefault(_marked);
@@ -66,6 +70,10 @@ var PostsCompiler = function () {
     this.ingnores = _lodash2.default.concat(_constants2.default.ignoredGlobs(), app.config.ignoreList || []);
 
     this.templateCompiler = new _templatesCompiler2.default(app);
+    this.matterOptions = {
+      excerpt: true,
+      excerpt_separator: this.app.config.excerpt.separator || '<!--more-->'
+    };
   }
 
   _createClass(PostsCompiler, [{
@@ -87,18 +95,31 @@ var PostsCompiler = function () {
       var _this2 = this;
 
       try {
+        // Check if the file exist
         if (!_fsExtra2.default.pathExistsSync(file)) return;
-        var raw = _fsExtra2.default.readFileSync(file, 'utf8');
-        var split = raw.split('}---');
-        var meta = JSON.parse(split[0] + '}');
 
-        // Get the Post Id if is not on the meta and is on the filename
-        if (!meta.pid && this.getPid(file)) {
-          meta.pid = this.getPid(file);
+        // Read the post file
+        var raw = _grayMatter2.default.read(file, this.matterOptions);
+        // Build meta from frontmatter
+        var meta = raw.data;
+        // Setting the content
+        meta.content = raw.content;
+        // Setting the excerpt
+        meta.excerpt = raw.excrept || '';
+
+        // Check if there is a minimun of frontmatter (title & date)
+        if (!meta.title || !meta.date) {
+          _errors2.default.noMinimumFrontmatter(file);
+          return;
+        }
+
+        // Get the Post id if it is not on the meta and is in the filename
+        if (!meta.id && this.getId(file)) {
+          meta.id = this.getId(file);
         }
 
         // Post widout id will not be proccesed
-        if (!meta.pid) {
+        if (!meta.id) {
           _errors2.default.missingPostId(file, meta);
           return;
         }
@@ -112,7 +133,12 @@ var PostsCompiler = function () {
         }
 
         // set the date as a MomentJS instance
-        meta.date = (0, _moment2.default)(meta.date);
+        try {
+          meta.date = (0, _moment2.default)(meta.date);
+        } catch (error) {
+          _errors2.default.invalidDate(meta.date, file);
+          return;
+        }
 
         // Extract Tags
         if (meta.tags) {
@@ -131,7 +157,7 @@ var PostsCompiler = function () {
         }
 
         // Setting the post content
-        meta.content = (0, _marked2.default)(split[1]);
+        meta.content = (0, _marked2.default)(meta.content);
 
         // Setting the post Slug
         meta.slug = (0, _slug2.default)(meta.title.toLowerCase());
@@ -139,7 +165,7 @@ var PostsCompiler = function () {
         // Build permalink
         meta.permalink = this.buildPermalink(meta);
 
-        var cached = _lodash2.default.findIndex(this.app.posts, { pid: meta.pid });
+        var cached = _lodash2.default.findIndex(this.app.posts, { pid: meta.id });
         if (cached > 0) _lodash2.default.pullAt(this.app.posts, cached);
         this.app.posts.push(meta);
 
@@ -161,8 +187,8 @@ var PostsCompiler = function () {
       }
     }
   }, {
-    key: 'getPid',
-    value: function getPid(file) {
+    key: 'getId',
+    value: function getId(file) {
       var filename = _path2.default.basename(file).split('-');
       var pid = Number.parseInt(filename[0], 10);
       if (Number.isInteger(pid)) return pid;
@@ -179,7 +205,7 @@ var PostsCompiler = function () {
         hour: new RegExp('%hour%', 'g'),
         minute: new RegExp('%minute%', 'g'),
         second: new RegExp('%second%', 'g'),
-        pid: new RegExp('%pid%', 'g'),
+        id: new RegExp('%id%', 'g'),
         slug: new RegExp('%slug%', 'g'),
         category: new RegExp('%category%', 'g'),
         author: new RegExp('%author%', 'g')
@@ -191,7 +217,7 @@ var PostsCompiler = function () {
         hour: meta.date.format('HH'),
         minute: meta.date.format('mm'),
         second: meta.date.format('ss'),
-        pid: meta.pid,
+        id: meta.id,
         slug: meta.slug,
         category: (0, _slug2.default)(typeof meta.categories === 'string' ? meta.categories : meta.categories[0]),
         author: (0, _slug2.default)(meta.author.name)

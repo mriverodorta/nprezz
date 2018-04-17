@@ -77,11 +77,7 @@ var Timer = function () {
     key: 'addSpaces',
     value: function addSpaces(text) {
       var rest = 8 - text.length;
-      var spaces = '';
-      for (var index = 0; index < rest - 1; index += 1) {
-        spaces += ' ';
-      }
-      return '' + spaces + text + ' ';
+      return text.padStart(rest) + ' ';
     }
   }]);
 

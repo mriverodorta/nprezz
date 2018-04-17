@@ -1,29 +1,50 @@
 {
   "name": "nprezz",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
     "start": "babel -w src -d ."
   },
+  "author": {
+    "name": "Maikel Rivero Dorta",
+    "email": "mriverodorta@gmail.com",
+    "url": "http://maikelrivero.com"
+  },
+  "homepage": "https://github.com/mriverodorta/nprezz.git",
+  "description": "NPrezz is a full-featured static site generator",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mriverodorta/nprezz.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mriverodorta/nprezz/issues"
+  },
+  "keywords": [
+    "static",
+    "generator",
+    "build system"
+  ],
   "dependencies": {
     "browser-sync": "^2.23.6",
     "chalk": "^2.3.1",
     "chokidar": "^2.0.2",
     "commander": "^2.14.1",
+    "front-matter": "^2.3.0",
     "fs-extra": "^5.0.0",
     "gaze": "^1.1.2",
+    "gray-matter": "^4.0.1",
     "inquirer": "^5.1.0",
     "lodash": "^4.17.5",
     "log-symbols": "^2.2.0",
     "marked": "^0.3.16",
+    "mkdirp": "^0.5.1",
     "moment": "^2.20.1",
     "node-sass": "^4.7.2",
     "pleeease": "^4.3.0",
     "pug": "^2.0.0-rc.4",
     "slug": "^0.9.1",
-    "yargs": "^11.0.0",
-    "mkdirp": "^0.5.1"
+    "yargs": "^11.0.0"
   },
   "bin": {
     "nprezz": "index.js"

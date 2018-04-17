@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import slug from 'slug';
 import _ from 'lodash';
+import matter from 'gray-matter';
 import marked from 'marked';
 import moment from 'moment';
 import Constants from '../constants';
@@ -20,6 +21,10 @@ export default class PostsCompiler {
     this.ingnores = _.concat(Constants.ignoredGlobs(), (app.config.ignoreList || []));
 
     this.templateCompiler = new TemplatesCompiler(app);
+    this.matterOptions = {
+      excerpt: true,
+      excerpt_separator: this.app.config.excerpt.separator || '<!--more-->',
+    };
   }
 
   watch() {
@@ -37,18 +42,31 @@ export default class PostsCompiler {
 
   loadPost(file) {
     try {
+      // Check if the file exist
       if (!fs.pathExistsSync(file)) return;
-      const raw = fs.readFileSync(file, 'utf8');
-      const split = raw.split('}---');
-      const meta = JSON.parse(`${split[0]}}`);
 
-      // Get the Post Id if is not on the meta and is on the filename
-      if (!meta.pid && this.getPid(file)) {
-        meta.pid = this.getPid(file);
+      // Read the post file
+      const raw = matter.read(file, this.matterOptions);
+      // Build meta from frontmatter
+      const meta = raw.data;
+      // Setting the content
+      meta.content = raw.content;
+      // Setting the excerpt
+      meta.excerpt = raw.excrept || '';
+
+      // Check if there is a minimun of frontmatter (title & date)
+      if (!meta.title || !meta.date) {
+        Errors.noMinimumFrontmatter(file);
+        return;
+      }
+
+      // Get the Post id if it is not on the meta and is in the filename
+      if (!meta.id && this.getId(file)) {
+        meta.id = this.getId(file);
       }
 
       // Post widout id will not be proccesed
-      if (!meta.pid) {
+      if (!meta.id) {
         Errors.missingPostId(file, meta);
         return;
       }
@@ -62,7 +80,12 @@ export default class PostsCompiler {
       }
 
       // set the date as a MomentJS instance
-      meta.date = moment(meta.date);
+      try {
+        meta.date = moment(meta.date);
+      } catch (error) {
+        Errors.invalidDate(meta.date, file);
+        return;
+      }
 
       // Extract Tags
       if (meta.tags) {
@@ -81,7 +104,7 @@ export default class PostsCompiler {
       }
 
       // Setting the post content
-      meta.content = marked(split[1]);
+      meta.content = marked(meta.content);
 
       // Setting the post Slug
       meta.slug = slug(meta.title.toLowerCase());
@@ -89,7 +112,7 @@ export default class PostsCompiler {
       // Build permalink
       meta.permalink = this.buildPermalink(meta);
 
-      const cached = _.findIndex(this.app.posts, { pid: meta.pid });
+      const cached = _.findIndex(this.app.posts, { pid: meta.id });
       if (cached > 0) _.pullAt(this.app.posts, cached);
       this.app.posts.push(meta);
 
@@ -110,7 +133,7 @@ export default class PostsCompiler {
     }
   }
 
-  getPid(file) {
+  getId(file) {
     const filename = path.basename(file).split('-');
     const pid = Number.parseInt(filename[0], 10);
     if (Number.isInteger(pid)) return pid;
@@ -126,7 +149,7 @@ export default class PostsCompiler {
       hour: new RegExp('%hour%', 'g'),
       minute: new RegExp('%minute%', 'g'),
       second: new RegExp('%second%', 'g'),
-      pid: new RegExp('%pid%', 'g'),
+      id: new RegExp('%id%', 'g'),
       slug: new RegExp('%slug%', 'g'),
       category: new RegExp('%category%', 'g'),
       author: new RegExp('%author%', 'g'),
@@ -138,7 +161,7 @@ export default class PostsCompiler {
       hour: meta.date.format('HH'),
       minute: meta.date.format('mm'),
       second: meta.date.format('ss'),
-      pid: meta.pid,
+      id: meta.id,
       slug: meta.slug,
       category: slug((typeof meta.categories === 'string' ? meta.categories : meta.categories[0])),
       author: slug(meta.author.name),

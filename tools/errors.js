@@ -9,7 +9,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var path = require('path');
-var log = require('./logger');
+var Log = require('./logger');
 
 var Errors = function () {
   function Errors() {
@@ -19,18 +19,28 @@ var Errors = function () {
   _createClass(Errors, null, [{
     key: 'missingPostId',
     value: function missingPostId(file, meta) {
-      log.warn('The post ' + path.basename(file, path.extname(file)) + ' will not be processed because is lacking the Post ID (pid).\n Make sure to include it in the meta as\n {\n   "pid": 5,\n   "title": "' + meta.title + '",\n   ...\n }\n\n or on the file name as\n 5-' + path.basename(file));
+      Log.warn('The post ' + path.basename(file, path.extname(file)) + ' will not be processed because is lacking the Post ID (pid).\n Make sure to include it in the meta as\n {\n   "pid": 5,\n   "title": "' + meta.title + '",\n   ...\n }\n\n or on the file name as\n 5-' + path.basename(file));
     }
   }, {
     key: 'configParsingError',
     value: function configParsingError(err) {
-      log.error('There was an error parsing the configuration file');
-      log.error(err);
+      Log.error('There was an error parsing the configuration file');
+      Log.error(err);
     }
   }, {
     key: 'configHasValidPrevious',
     value: function configHasValidPrevious() {
-      log.info('The application will still run with the previous valid configuration.');
+      Log.info('The application will still run with the previous valid configuration.');
+    }
+  }, {
+    key: 'noMinimumFrontmatter',
+    value: function noMinimumFrontmatter(file) {
+      Log.error('Is required a minimum of "title" and "date" as frontmatter in ' + file);
+    }
+  }, {
+    key: 'invalidDate',
+    value: function invalidDate(date, file) {
+      Log.error('The date (' + date + ') provided in ' + file + ' is not valid');
     }
   }]);
 
