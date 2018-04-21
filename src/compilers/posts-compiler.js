@@ -18,7 +18,7 @@ export default class PostsCompiler {
    */
   constructor(app) {
     this.app = app;
-    this.ingnores = _.concat(Constants.ignoredGlobs(), (app.config.ignoreList || []));
+    this.ingnores = _.concat(Constants.ignoredGlobs(), app.config.ignoreList || []);
 
     this.templateCompiler = new TemplatesCompiler(app);
     this.matterOptions = {
@@ -28,16 +28,16 @@ export default class PostsCompiler {
   }
 
   watch() {
-    const watcher = chokidar.watch([
-      `${(this.app.config.posts.dir || '_posts')}/**/*.md`,
-      `${(this.app.config.posts.dir || '_posts')}/**/*.markdown`,
-    ], { ignored: this.ingnores });
+    const watcher = chokidar.watch(
+      [`${this.app.config.posts.dir || '_posts'}/**/*.md`, `${this.app.config.posts.dir || '_posts'}/**/*.markdown`],
+      { ignored: this.ingnores }
+    );
 
     watcher.on('all', (e, file) => {
       this.loadPost(file);
     });
 
-    watcher.on('ready', () => { });
+    watcher.on('ready', () => {});
   }
 
   loadPost(file) {
@@ -54,16 +54,20 @@ export default class PostsCompiler {
 
       // Setting the excerpt
       if (meta.excerpt) {
-        try { meta.excerpt = marked(meta.excerpt); } catch (e) { /* nothing to do */ }
+        try {
+          meta.excerpt = marked(meta.excerpt);
+        } catch (e) {
+          /* nothing to do */
+        }
       } else if (raw.excerpt) {
         try {
           meta.excerpt = marked(raw.excerpt);
         } catch (e) {
-          meta.excerpt = raw.excrept;
+          meta.excerpt = raw.excerpt;
         }
       }
 
-      // Check if there is a minimun of frontmatter (title & date)
+      // Check if there is a minimum of frontmatter (title & date)
       if (!meta.title || !meta.date) {
         Errors.noMinimumFrontmatter(file);
         return;
@@ -73,8 +77,8 @@ export default class PostsCompiler {
       if (!meta.id && this.getId(file)) {
         meta.id = this.getId(file);
       }
-   
-      // Post widout id will not be proccesed
+
+      // Post without id will not be processed
       if (!meta.id) {
         Errors.missingPostId(file, meta);
         return;
@@ -98,7 +102,7 @@ export default class PostsCompiler {
 
       // Extract Tags
       if (meta.tags) {
-        meta.tags.forEach((tag) => {
+        meta.tags.forEach(tag => {
           this.app.tags[slug(tag.toLowerCase())] = tag;
         });
       }
@@ -107,7 +111,7 @@ export default class PostsCompiler {
       if (typeof meta.categories === 'string') {
         this.app.categories[slug(meta.categories.toLowerCase())] = meta.categories;
       } else if (Array.isArray(meta.categories)) {
-        meta.categories.forEach((cat) => {
+        meta.categories.forEach(cat => {
           this.app.categories[slug(cat.toLowerCase())] = cat;
         });
       }
@@ -172,14 +176,14 @@ export default class PostsCompiler {
       second: meta.date.format('ss'),
       id: meta.id,
       slug: meta.slug,
-      category: slug((typeof meta.categories === 'string' ? meta.categories : meta.categories[0])),
+      category: slug(typeof meta.categories === 'string' ? meta.categories : meta.categories[0]),
       author: slug(meta.author.name),
     };
 
     _.forEach(tags, (regex, key) => {
       permalink = permalink.replace(regex, tagsValues[key]);
     });
-    if (permalink.charAt((permalink.length - 1)) === '/') {
+    if (permalink.charAt(permalink.length - 1) === '/') {
       permalink += 'index.html';
     } else {
       permalink += '.html';

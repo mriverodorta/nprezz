@@ -1,12 +1,15 @@
-const path = require('path');
-const Log = require('./logger');
+import path from 'path';
+import Log from './logger';
 
 export default class Errors {
   static missingPostId(file, meta) {
-    Log.warn(`The post ${path.basename(file, path.extname(file))} will not be processed because is lacking the Post ID (pid).
+    Log.warn(`The post ${path.basename(
+      file,
+      path.extname(file)
+    )} will not be processed because is lacking the Post ID (id).
  Make sure to include it in the meta as
  {
-   "pid": 5,
+   "id": 5,
    "title": "${meta.title}",
    ...
  }

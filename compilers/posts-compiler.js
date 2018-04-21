@@ -109,16 +109,18 @@ var PostsCompiler = function () {
         if (meta.excerpt) {
           try {
             meta.excerpt = (0, _marked2.default)(meta.excerpt);
-          } catch (e) {/* nothing to do */}
+          } catch (e) {
+            /* nothing to do */
+          }
         } else if (raw.excerpt) {
           try {
             meta.excerpt = (0, _marked2.default)(raw.excerpt);
           } catch (e) {
-            meta.excerpt = raw.excrept;
+            meta.excerpt = raw.excerpt;
           }
         }
 
-        // Check if there is a minimun of frontmatter (title & date)
+        // Check if there is a minimum of frontmatter (title & date)
         if (!meta.title || !meta.date) {
           _errors2.default.noMinimumFrontmatter(file);
           return;
@@ -129,7 +131,7 @@ var PostsCompiler = function () {
           meta.id = this.getId(file);
         }
 
-        // Post widout id will not be proccesed
+        // Post without id will not be processed
         if (!meta.id) {
           _errors2.default.missingPostId(file, meta);
           return;

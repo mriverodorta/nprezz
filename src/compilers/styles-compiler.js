@@ -5,7 +5,6 @@ import fs from 'fs-extra';
 import log from '../tools/logger';
 import Timer from '../tools/timer';
 
-
 export default class StylesCompiler {
   /**
    * Creates an instance of StylesCompiler.
@@ -14,7 +13,7 @@ export default class StylesCompiler {
   constructor(app) {
     this.app = app;
 
-    // Instantiatin new Timer
+    // Instantiating new Timer
     this.timer = new Timer();
 
     // regex for different types of styles
@@ -39,7 +38,7 @@ export default class StylesCompiler {
   }
 
   /**
-   * Thest a file looking for the right style compiler
+   * Test a file looking for the right style compiler
    * @param {String} file
    * @returns the compiler that should be be used.
    */
@@ -71,10 +70,13 @@ export default class StylesCompiler {
     };
     this.timer.start();
     sassCompiler.render(sassOptions, (err, styles) => {
-      if (err) { this.handleErrorSass(err); return; }
+      if (err) {
+        this.handleErrorSass(err);
+        return;
+      }
       if (styles.css.toString('utf8')) {
         const fixed = pleeease.process(styles.css.toString('utf8'), pleeeaseOpt);
-        fixed.then((css) => {
+        fixed.then(css => {
           this.saveStyles(css, output);
         });
       }
@@ -88,7 +90,8 @@ export default class StylesCompiler {
   handleErrorSass(err) {
     if (err.file && err.line) {
       const info = `Error in file: ${err.file} on Line: ${err.line}/${err.column}`;
-      const message = err.message.indexOf('\n') === -1 ? err.message : err.message.substring(0, err.message.indexOf('\n'));
+      const message =
+        err.message.indexOf('\n') === -1 ? err.message : err.message.substring(0, err.message.indexOf('\n'));
       log.error([info, message]);
     } else log.error(JSON.stringify(err, undefined, 2));
   }
@@ -100,7 +103,7 @@ export default class StylesCompiler {
    */
   saveStyles(styles, file) {
     fs.ensureDirSync(path.dirname(file));
-    fs.writeFile(file, styles, (err) => {
+    fs.writeFile(file, styles, err => {
       if (err) log.error(err);
       else {
         this.timer.finish();

@@ -5,9 +5,14 @@ import moment from 'moment';
 export function logmsg(msg, type, time) {
   const theTime = moment();
   if (Array.isArray(msg)) {
-    msg.forEach(one => console.log(`${chalk.bgBlueBright.bold(` ${symbols[type]} `)} ${(time || chalk.white.bgGreen(` ${theTime.format('HH:mm:ss')} `))} ${one}`));
+    msg.forEach(one =>
+      console.log(
+        `${chalk.bgBlueBright.bold(` ${symbols[type]} `)} ${time ||
+          chalk.white.bgGreen(` ${theTime.format('HH:mm:ss')} `)} ${one}`
+      )
+    );
   } else {
-    console.log(`${symbols[type]}  ${(time || chalk.white.bgGreen(` ${theTime.format('HH:mm:ss')} `))}  ${msg}`);
+    console.log(`${symbols[type]}  ${time || chalk.white.bgGreen(` ${theTime.format('HH:mm:ss')} `)}  ${msg}`);
   }
 }
 

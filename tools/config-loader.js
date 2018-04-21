@@ -69,7 +69,7 @@ var ConfigLoader = function () {
         this.timer.finish();
         _logger2.default.success('Configuration Loaded', this.timer.getFormattedLapse());
       } else {
-        _logger2.default.info('Este directorio no contiene un proyecto NPrezz o existen problemas con el archivo de configuracion.');
+        _logger2.default.info('This is not a NPrezz project or there is something wrong in the config.json file.');
         process.exit();
       }
     }

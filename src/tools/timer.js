@@ -2,7 +2,6 @@ import moment from 'moment';
 import chalk from 'chalk';
 import Log from './logger';
 
-
 export default class Timer {
   constructor() {
     this.begin = moment();
@@ -45,7 +44,6 @@ export default class Timer {
   }
 
   addSpaces(text) {
-    const rest = 8 - text.length;
-    return `${text.padStart(rest)} `;
+    return `${text.padStart(7)} `;
   }
 }

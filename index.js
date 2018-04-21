@@ -41,7 +41,8 @@ var app = {
   tags: [],
   categories: [],
   bsreload: function bsreload() {
-    if (this.bsready) app.bs.reload();else _logger2.default.error('BrowserSync instance not ready to reload');
+    if (this.bsready) app.bs.reload();
+    // else Log.error('BrowserSync instance not ready to reload');
   }
 };
 

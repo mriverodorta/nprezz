@@ -44,7 +44,7 @@ var StylesCompiler = function () {
 
     this.app = app;
 
-    // Instantiatin new Timer
+    // Instantiating new Timer
     this.timer = new _timer2.default();
 
     // regex for different types of styles
@@ -73,7 +73,7 @@ var StylesCompiler = function () {
     }
 
     /**
-     * Thest a file looking for the right style compiler
+     * Test a file looking for the right style compiler
      * @param {String} file
      * @returns the compiler that should be be used.
      */
@@ -114,7 +114,8 @@ var StylesCompiler = function () {
       this.timer.start();
       _nodeSass2.default.render(sassOptions, function (err, styles) {
         if (err) {
-          _this.handleErrorSass(err);return;
+          _this.handleErrorSass(err);
+          return;
         }
         if (styles.css.toString('utf8')) {
           var fixed = _pleeease2.default.process(styles.css.toString('utf8'), pleeeaseOpt);

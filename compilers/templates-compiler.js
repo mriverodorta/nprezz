@@ -129,7 +129,7 @@ var PugCompiler = function () {
       var filename = _path2.default.basename(file, _path2.default.extname(file)) + '.html';
       // Get the file new directory
       var dirname = _path2.default.join(base, _path2.default.dirname(file));
-      // return the full addres of the new file.
+      // return the full address of the new file.
       return _path2.default.join(dirname, filename);
     }
   }]);

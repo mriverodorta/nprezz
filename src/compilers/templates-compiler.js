@@ -5,7 +5,6 @@ import _ from 'lodash';
 import Log from '../tools/logger';
 import Timer from '../tools/timer';
 
-
 export default class PugCompiler {
   constructor(app) {
     this.app = app;
@@ -66,10 +65,10 @@ export default class PugCompiler {
   }
 
   saveTemplate(template, file) {
-    const base = (this.app.config.dist || '_dist');
+    const base = this.app.config.dist || '_dist';
     const newFile = this.newPath(file, base);
     fs.ensureDirSync(path.dirname(newFile));
-    fs.writeFile(newFile, template, (err) => {
+    fs.writeFile(newFile, template, err => {
       if (err) Log.error(err);
       else {
         this.timer.finish();
@@ -88,7 +87,7 @@ export default class PugCompiler {
     const filename = `${path.basename(file, path.extname(file))}.html`;
     // Get the file new directory
     const dirname = path.join(base, path.dirname(file));
-    // return the full addres of the new file.
+    // return the full address of the new file.
     return path.join(dirname, filename);
   }
 }

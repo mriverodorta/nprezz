@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import chokidar from 'chokidar';
-import log from './logger';
+import Log from './logger';
 import Timer from './timer';
 import Errors from './errors';
 
@@ -35,9 +35,9 @@ export default class ConfigLoader {
         process.exit();
       }
       this.timer.finish();
-      log.success('Configuration Loaded', this.timer.getFormattedLapse());
+      Log.success('Configuration Loaded', this.timer.getFormattedLapse());
     } else {
-      log.info('Este directorio no contiene un proyecto NPrezz o existen problemas con el archivo de configuracion.');
+      Log.info('This is not a NPrezz project or there is something wrong in the config.json file.');
       process.exit();
     }
   }
@@ -46,7 +46,6 @@ export default class ConfigLoader {
    * Watch for any changes in the config file and reload
    */
   watch() {
-    chokidar.watch(`${this.app.cwd}/config.json`, { ignoreInitial: true })
-      .on('all', () => this.load());
+    chokidar.watch(`${this.app.cwd}/config.json`, { ignoreInitial: true }).on('all', () => this.load());
   }
 }
