@@ -48,7 +48,7 @@ var PostsCompiler = function () {
     value: function watch(app) {
       var _this = this;
 
-      var templater = new _templatesCompiler2.default(app);
+      var templates = new _templatesCompiler2.default(app);
       var styler = new _stylesCompiler2.default(app);
       var ingnores = _constants2.default.ignoredGlobs().concat(app.config.ignoreList || []);
 
@@ -57,11 +57,12 @@ var PostsCompiler = function () {
       watcher.on('all', function (event, file) {
         if (!_fsExtra2.default.pathExistsSync(file)) return;
         styler.compile(file);
-        templater.compile(file);
+        templates.compile(file);
       });
       watcher.on('ready', function () {
         _this.timer.finish();
-        _logger2.default.success('Warcher\'s ready', _this.timer.getFormattedLapse());
+        console.log(JSON.stringify(watcher.getWatched()));
+        _logger2.default.success('Watcher\'s ready', _this.timer.getFormattedLapse());
       });
     }
   }]);

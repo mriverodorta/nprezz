@@ -8,7 +8,7 @@ import Timer from './tools/timer';
 
 export default class PostsCompiler {
   static watch(app) {
-    const templater = new TemplatesCompiler(app);
+    const templates = new TemplatesCompiler(app);
     const styler = new StylesCompiler(app);
     const ingnores = Constants.ignoredGlobs().concat(app.config.ignoreList || []);
 
@@ -17,11 +17,12 @@ export default class PostsCompiler {
     watcher.on('all', (event, file) => {
       if (!fs.pathExistsSync(file)) return;
       styler.compile(file);
-      templater.compile(file);
+      templates.compile(file);
     });
     watcher.on('ready', () => {
       this.timer.finish();
-      Log.success('Warcher\'s ready', this.timer.getFormattedLapse());
+      console.log(JSON.stringify(watcher.getWatched()));
+      Log.success(`Watcher's ready`, this.timer.getFormattedLapse());
     });
   }
 }

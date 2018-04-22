@@ -51,7 +51,7 @@ var config = new _configLoader2.default(app);
 config.load();
 if (!app.config) process.exit();
 config.watch(app);
-_logger2.default.info('Starting...');
+// Log.info('Starting...');
 
 // Posts watcher
 var Posts = new _postsCompiler2.default(app);

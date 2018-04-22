@@ -26,7 +26,7 @@ const config = new ConfigLoader(app);
 config.load();
 if (!app.config) process.exit();
 config.watch(app);
-Log.info('Starting...');
+// Log.info('Starting...');
 
 // Posts watcher
 const Posts = new PostsCompiler(app);
