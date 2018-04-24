@@ -20,6 +20,12 @@ export default class PostsCompiler {
     this.app = app;
     this.ingnores = _.concat(Constants.ignoredGlobs(), app.config.ignoreList || []);
 
+    // Is the watcher ready
+    this.isWatcherReady = false;
+
+    // Current post
+    this.thePost = {};
+
     this.templateCompiler = new TemplatesCompiler(app);
     this.matterOptions = {
       excerpt: true,
@@ -34,13 +40,24 @@ export default class PostsCompiler {
     );
 
     watcher.on('all', (e, file) => {
+      // if (!this.isWatcherReady) {
       this.loadPost(file);
+      // } else if (path.extname(file) !== '') {
+      //   this.firstTimePosts.push(file);
+      // }
     });
 
-    watcher.on('ready', () => {});
+    watcher.on('ready', () => {
+      // Set the watcher as ready
+      this.isWatcherReady = true;
+
+      // compile all the loaded post
+      this.compilePostCache();
+    });
   }
 
   loadPost(file) {
+    this.thePost = {};
     try {
       // Check if the file exist
       if (!fs.pathExistsSync(file)) return;
@@ -48,91 +65,94 @@ export default class PostsCompiler {
       // Read the post file
       const raw = matter.read(file, this.matterOptions);
       // Build meta from frontmatter
-      const meta = raw.data;
+      this.thePost = raw.data;
       // Setting the content
-      meta.content = raw.content;
+      this.thePost.content = raw.content;
 
       // Setting the excerpt
-      if (meta.excerpt) {
+      if (this.thePost.excerpt) {
         try {
-          meta.excerpt = marked(meta.excerpt);
+          this.thePost.excerpt = marked(this.thePost.excerpt);
         } catch (e) {
           /* nothing to do */
         }
       } else if (raw.excerpt) {
         try {
-          meta.excerpt = marked(raw.excerpt);
+          this.thePost.excerpt = marked(raw.excerpt);
         } catch (e) {
-          meta.excerpt = raw.excerpt;
+          this.thePost.excerpt = raw.excerpt;
         }
       }
 
       // Check if there is a minimum of frontmatter (title & date)
-      if (!meta.title || !meta.date) {
+      if (!this.thePost.title || !this.thePost.date) {
         Errors.noMinimumFrontmatter(file);
         return;
       }
 
-      // Get the Post id if it is not on the meta and is in the filename
-      if (!meta.id && this.getId(file)) {
-        meta.id = this.getId(file);
+      // Get the Post id if it is not on the this.thePost and is in the filename
+      if (!this.thePost.id && this.getId(file)) {
+        this.thePost.id = this.getId(file);
       }
 
       // Post without id will not be processed
-      if (!meta.id) {
-        Errors.missingPostId(file, meta);
+      if (!this.thePost.id) {
+        Errors.missingPostId(file, this.thePost);
         return;
       }
 
       // Set the author
-      if (!meta.author && this.app.config.author) {
-        meta.author = this.app.config.author;
+      if (!this.thePost.author && this.app.config.author) {
+        this.thePost.author = this.app.config.author;
       } else {
-        meta.author = {};
-        meta.author.name = 'No Author';
+        this.thePost.author = {};
+        this.thePost.author.name = 'No Author';
       }
 
       // set the date as a MomentJS instance
       try {
-        meta.date = moment(meta.date);
+        this.thePost.date = moment(this.thePost.date);
       } catch (error) {
-        Errors.invalidDate(meta.date, file);
+        Errors.invalidDate(this.thePost.date, file);
         return;
       }
 
       // Extract Tags
-      if (meta.tags) {
-        meta.tags.forEach(tag => {
+      if (this.thePost.tags) {
+        this.thePost.tags.forEach(tag => {
           this.app.tags[slug(tag.toLowerCase())] = tag;
         });
       }
 
       // Extract Categories
-      if (typeof meta.categories === 'string') {
-        this.app.categories[slug(meta.categories.toLowerCase())] = meta.categories;
-      } else if (Array.isArray(meta.categories)) {
-        meta.categories.forEach(cat => {
+      if (typeof this.thePost.categories === 'string') {
+        this.app.categories[slug(this.thePost.categories.toLowerCase())] = this.thePost.categories;
+      } else if (Array.isArray(this.thePost.categories)) {
+        this.thePost.categories.forEach(cat => {
           this.app.categories[slug(cat.toLowerCase())] = cat;
         });
       }
 
       // Setting the post content
-      meta.content = marked(meta.content);
+      this.thePost.content = marked(this.thePost.content);
 
       // Setting the post Slug
-      meta.slug = slug(meta.title.toLowerCase());
+      this.thePost.slug = slug(this.thePost.title.toLowerCase());
 
       // Build permalink
-      meta.permalink = this.buildPermalink(meta);
+      this.thePost.permalink = this.buildPermalink();
 
-      const cached = _.findIndex(this.app.posts, { pid: meta.id });
+      // Save the post to the cache
+      const cached = _.findIndex(this.app.posts, { id: this.thePost.id });
       if (cached > 0) _.pullAt(this.app.posts, cached);
-      this.app.posts.push(meta);
+      this.app.posts.push(this.thePost);
 
-      // Compile the post
-      this.templateCompiler.compilePost(meta);
+      // Compile the post if this is not the first time load
+      if (this.isWatcherReady) {
+        this.templateCompiler.compilePost(this.thePost);
+      }
 
-      // log.success(`Post ${meta.title} was reloaded.`);
+      // log.success(`Post ${this.thePost.title} was reloaded.`);
     } catch (error) {
       Log.error(error);
       // log.error('Error loading metadata as JSON in');
@@ -140,9 +160,14 @@ export default class PostsCompiler {
     }
   }
 
-  getTags(meta) {
-    if (meta.tags) {
-      this.app.tags.concat(meta.tags);
+  compilePostCache() {
+    const postsCache = this.app.posts;
+    postsCache.forEach(post => this.templateCompiler.compilePost(post));
+  }
+
+  getTags() {
+    if (this.thePost.tags) {
+      this.app.tags.concat(this.thePost.tags);
     }
   }
 
@@ -153,8 +178,8 @@ export default class PostsCompiler {
     return false;
   }
 
-  buildPermalink(meta) {
-    let permalink = meta.permalink || this.app.config.permalink || '/post/%slug%';
+  buildPermalink() {
+    let permalink = this.thePost.permalink || this.app.config.permalink || '/post/%slug%';
     const tags = {
       year: new RegExp('%year%', 'g'),
       month: new RegExp('%month%', 'g'),
@@ -168,16 +193,18 @@ export default class PostsCompiler {
       author: new RegExp('%author%', 'g'),
     };
     const tagsValues = {
-      year: meta.date.format('YYYY'),
-      month: meta.date.format('MM'),
-      day: meta.date.format('DD'),
-      hour: meta.date.format('HH'),
-      minute: meta.date.format('mm'),
-      second: meta.date.format('ss'),
-      id: meta.id,
-      slug: meta.slug,
-      category: slug(typeof meta.categories === 'string' ? meta.categories : meta.categories[0]),
-      author: slug(meta.author.name),
+      year: this.thePost.date.format('YYYY'),
+      month: this.thePost.date.format('MM'),
+      day: this.thePost.date.format('DD'),
+      hour: this.thePost.date.format('HH'),
+      minute: this.thePost.date.format('mm'),
+      second: this.thePost.date.format('ss'),
+      id: this.thePost.id,
+      slug: this.thePost.slug,
+      category: slug(
+        typeof this.thePost.categories === 'string' ? this.thePost.categories : this.thePost.categories[0]
+      ),
+      author: slug(this.thePost.author.name),
     };
 
     _.forEach(tags, (regex, key) => {

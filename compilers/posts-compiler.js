@@ -69,6 +69,12 @@ var PostsCompiler = function () {
     this.app = app;
     this.ingnores = _lodash2.default.concat(_constants2.default.ignoredGlobs(), app.config.ignoreList || []);
 
+    // Is the watcher ready
+    this.isWatcherReady = false;
+
+    // Current post
+    this.thePost = {};
+
     this.templateCompiler = new _templatesCompiler2.default(app);
     this.matterOptions = {
       excerpt: true,
@@ -84,16 +90,27 @@ var PostsCompiler = function () {
       var watcher = _chokidar2.default.watch([(this.app.config.posts.dir || '_posts') + '/**/*.md', (this.app.config.posts.dir || '_posts') + '/**/*.markdown'], { ignored: this.ingnores });
 
       watcher.on('all', function (e, file) {
+        // if (!this.isWatcherReady) {
         _this.loadPost(file);
+        // } else if (path.extname(file) !== '') {
+        //   this.firstTimePosts.push(file);
+        // }
       });
 
-      watcher.on('ready', function () {});
+      watcher.on('ready', function () {
+        // Set the watcher as ready
+        _this.isWatcherReady = true;
+
+        // compile all the loaded post
+        _this.compilePostCache();
+      });
     }
   }, {
     key: 'loadPost',
     value: function loadPost(file) {
       var _this2 = this;
 
+      this.thePost = {};
       try {
         // Check if the file exist
         if (!_fsExtra2.default.pathExistsSync(file)) return;
@@ -101,91 +118,94 @@ var PostsCompiler = function () {
         // Read the post file
         var raw = _grayMatter2.default.read(file, this.matterOptions);
         // Build meta from frontmatter
-        var meta = raw.data;
+        this.thePost = raw.data;
         // Setting the content
-        meta.content = raw.content;
+        this.thePost.content = raw.content;
 
         // Setting the excerpt
-        if (meta.excerpt) {
+        if (this.thePost.excerpt) {
           try {
-            meta.excerpt = (0, _marked2.default)(meta.excerpt);
+            this.thePost.excerpt = (0, _marked2.default)(this.thePost.excerpt);
           } catch (e) {
             /* nothing to do */
           }
         } else if (raw.excerpt) {
           try {
-            meta.excerpt = (0, _marked2.default)(raw.excerpt);
+            this.thePost.excerpt = (0, _marked2.default)(raw.excerpt);
           } catch (e) {
-            meta.excerpt = raw.excerpt;
+            this.thePost.excerpt = raw.excerpt;
           }
         }
 
         // Check if there is a minimum of frontmatter (title & date)
-        if (!meta.title || !meta.date) {
+        if (!this.thePost.title || !this.thePost.date) {
           _errors2.default.noMinimumFrontmatter(file);
           return;
         }
 
-        // Get the Post id if it is not on the meta and is in the filename
-        if (!meta.id && this.getId(file)) {
-          meta.id = this.getId(file);
+        // Get the Post id if it is not on the this.thePost and is in the filename
+        if (!this.thePost.id && this.getId(file)) {
+          this.thePost.id = this.getId(file);
         }
 
         // Post without id will not be processed
-        if (!meta.id) {
-          _errors2.default.missingPostId(file, meta);
+        if (!this.thePost.id) {
+          _errors2.default.missingPostId(file, this.thePost);
           return;
         }
 
         // Set the author
-        if (!meta.author && this.app.config.author) {
-          meta.author = this.app.config.author;
+        if (!this.thePost.author && this.app.config.author) {
+          this.thePost.author = this.app.config.author;
         } else {
-          meta.author = {};
-          meta.author.name = 'No Author';
+          this.thePost.author = {};
+          this.thePost.author.name = 'No Author';
         }
 
         // set the date as a MomentJS instance
         try {
-          meta.date = (0, _moment2.default)(meta.date);
+          this.thePost.date = (0, _moment2.default)(this.thePost.date);
         } catch (error) {
-          _errors2.default.invalidDate(meta.date, file);
+          _errors2.default.invalidDate(this.thePost.date, file);
           return;
         }
 
         // Extract Tags
-        if (meta.tags) {
-          meta.tags.forEach(function (tag) {
+        if (this.thePost.tags) {
+          this.thePost.tags.forEach(function (tag) {
             _this2.app.tags[(0, _slug2.default)(tag.toLowerCase())] = tag;
           });
         }
 
         // Extract Categories
-        if (typeof meta.categories === 'string') {
-          this.app.categories[(0, _slug2.default)(meta.categories.toLowerCase())] = meta.categories;
-        } else if (Array.isArray(meta.categories)) {
-          meta.categories.forEach(function (cat) {
+        if (typeof this.thePost.categories === 'string') {
+          this.app.categories[(0, _slug2.default)(this.thePost.categories.toLowerCase())] = this.thePost.categories;
+        } else if (Array.isArray(this.thePost.categories)) {
+          this.thePost.categories.forEach(function (cat) {
             _this2.app.categories[(0, _slug2.default)(cat.toLowerCase())] = cat;
           });
         }
 
         // Setting the post content
-        meta.content = (0, _marked2.default)(meta.content);
+        this.thePost.content = (0, _marked2.default)(this.thePost.content);
 
         // Setting the post Slug
-        meta.slug = (0, _slug2.default)(meta.title.toLowerCase());
+        this.thePost.slug = (0, _slug2.default)(this.thePost.title.toLowerCase());
 
         // Build permalink
-        meta.permalink = this.buildPermalink(meta);
+        this.thePost.permalink = this.buildPermalink();
 
-        var cached = _lodash2.default.findIndex(this.app.posts, { pid: meta.id });
+        // Save the post to the cache
+        var cached = _lodash2.default.findIndex(this.app.posts, { id: this.thePost.id });
         if (cached > 0) _lodash2.default.pullAt(this.app.posts, cached);
-        this.app.posts.push(meta);
+        this.app.posts.push(this.thePost);
 
-        // Compile the post
-        this.templateCompiler.compilePost(meta);
+        // Compile the post if this is not the first time load
+        if (this.isWatcherReady) {
+          this.templateCompiler.compilePost(this.thePost);
+        }
 
-        // log.success(`Post ${meta.title} was reloaded.`);
+        // log.success(`Post ${this.thePost.title} was reloaded.`);
       } catch (error) {
         _logger2.default.error(error);
         // log.error('Error loading metadata as JSON in');
@@ -193,10 +213,20 @@ var PostsCompiler = function () {
       }
     }
   }, {
+    key: 'compilePostCache',
+    value: function compilePostCache() {
+      var _this3 = this;
+
+      var postsCache = this.app.posts;
+      postsCache.forEach(function (post) {
+        return _this3.templateCompiler.compilePost(post);
+      });
+    }
+  }, {
     key: 'getTags',
-    value: function getTags(meta) {
-      if (meta.tags) {
-        this.app.tags.concat(meta.tags);
+    value: function getTags() {
+      if (this.thePost.tags) {
+        this.app.tags.concat(this.thePost.tags);
       }
     }
   }, {
@@ -209,8 +239,8 @@ var PostsCompiler = function () {
     }
   }, {
     key: 'buildPermalink',
-    value: function buildPermalink(meta) {
-      var permalink = meta.permalink || this.app.config.permalink || '/post/%slug%';
+    value: function buildPermalink() {
+      var permalink = this.thePost.permalink || this.app.config.permalink || '/post/%slug%';
       var tags = {
         year: new RegExp('%year%', 'g'),
         month: new RegExp('%month%', 'g'),
@@ -224,16 +254,16 @@ var PostsCompiler = function () {
         author: new RegExp('%author%', 'g')
       };
       var tagsValues = {
-        year: meta.date.format('YYYY'),
-        month: meta.date.format('MM'),
-        day: meta.date.format('DD'),
-        hour: meta.date.format('HH'),
-        minute: meta.date.format('mm'),
-        second: meta.date.format('ss'),
-        id: meta.id,
-        slug: meta.slug,
-        category: (0, _slug2.default)(typeof meta.categories === 'string' ? meta.categories : meta.categories[0]),
-        author: (0, _slug2.default)(meta.author.name)
+        year: this.thePost.date.format('YYYY'),
+        month: this.thePost.date.format('MM'),
+        day: this.thePost.date.format('DD'),
+        hour: this.thePost.date.format('HH'),
+        minute: this.thePost.date.format('mm'),
+        second: this.thePost.date.format('ss'),
+        id: this.thePost.id,
+        slug: this.thePost.slug,
+        category: (0, _slug2.default)(typeof this.thePost.categories === 'string' ? this.thePost.categories : this.thePost.categories[0]),
+        author: (0, _slug2.default)(this.thePost.author.name)
       };
 
       _lodash2.default.forEach(tags, function (regex, key) {
