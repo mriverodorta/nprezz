@@ -14,6 +14,10 @@ var _fsExtra = require('fs-extra');
 
 var _fsExtra2 = _interopRequireDefault(_fsExtra);
 
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
+
 var _stylesCompiler = require('./compilers/styles-compiler');
 
 var _stylesCompiler2 = _interopRequireDefault(_stylesCompiler);
@@ -48,21 +52,49 @@ var PostsCompiler = function () {
     value: function watch(app) {
       var _this = this;
 
+      // Underscore regex
+      this.underscores = /^_[a-zA-Z0-9]+|\\|\/_[a-zA-Z0-9]+/;
+
+      // First Run files
+      this.firstTimeFiles = [];
+
+      // Is the watcher ready
+      this.isWatcherReady = false;
+
+      // Instantiating the compilers
       var templates = new _templatesCompiler2.default(app);
       var styler = new _stylesCompiler2.default(app);
+
+      // Prepare files to ignore
       var ingnores = _constants2.default.ignoredGlobs().concat(app.config.ignoreList || []);
 
+      // Start the timer
       this.timer = new _timer2.default();
-      var watcher = _chokidar2.default.watch('**/*', { ignored: ingnores, ignoreInitial: true });
+
+      // Define the watcher
+      var watcher = _chokidar2.default.watch('**/*', { ignored: ingnores });
+
+      // Action on every watched file event
       watcher.on('all', function (event, file) {
         if (!_fsExtra2.default.pathExistsSync(file)) return;
-        styler.compile(file);
-        templates.compile(file);
+
+        // Prepare list of files for firs time build
+        if (!_this.isWatcherReady && _path2.default.extname(file) !== '' && !_this.underscores.test(file)) {
+          _this.firstTimeFiles.push(file);
+        } else {
+          styler.compile(file);
+          templates.compile(file);
+        }
       });
       watcher.on('ready', function () {
+        _this.isWatcherReady = true;
+
         _this.timer.finish();
-        console.log(JSON.stringify(watcher.getWatched()));
         _logger2.default.success('Watcher\'s ready', _this.timer.getFormattedLapse());
+        _this.firstTimeFiles.forEach(function (file) {
+          styler.compile(file);
+          templates.compile(file);
+        });
       });
     }
   }]);

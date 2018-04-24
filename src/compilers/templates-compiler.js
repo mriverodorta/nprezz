@@ -20,7 +20,7 @@ export default class PugCompiler {
 
     // regex for different types of templates
     this.pugType = /.pug|.jade/;
-    this.underscores = /^_/;
+    this.underscores = /^_[a-zA-Z0-9]+|\\|\/_[a-zA-Z0-9]+/;
   }
 
   compile(file) {
@@ -61,7 +61,7 @@ export default class PugCompiler {
   }
 
   haveUnderscores(name) {
-    return this.underscores.test(path.basename(name));
+    return this.underscores.test(name);
   }
 
   saveTemplate(template, file) {

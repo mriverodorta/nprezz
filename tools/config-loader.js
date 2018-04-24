@@ -14,6 +14,10 @@ var _chokidar = require('chokidar');
 
 var _chokidar2 = _interopRequireDefault(_chokidar);
 
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
 var _logger = require('./logger');
 
 var _logger2 = _interopRequireDefault(_logger);
@@ -42,6 +46,39 @@ var ConfigLoader = function () {
 
     // Instantiating new Timer
     this.timer = new _timer2.default();
+
+    // Default configurations
+    this.defaultConfig = {
+      user: 'NPrezz',
+      dist: '_dist',
+      styles: {
+        entry: './_styles/main.sass',
+        output: 'assets/styles.css',
+        imagePath: './img',
+        rem: '16px',
+        precision: 4,
+        outputStyle: 'expanded',
+        minified: false,
+        errLogToConsole: false
+      },
+      ignoreList: ['_dist'],
+      posts: {
+        dir: '_posts',
+        template: '_single.pug',
+        permalink: '/blog/%year%/%month%/%day%/%slug%'
+      },
+      server: {
+        port: 4000,
+        path: '_dist',
+        logLevel: 'silent',
+        openBrowserOnReady: false,
+        notifyOnChanges: false
+      },
+      pug: {
+        pretty: true,
+        basedir: './'
+      }
+    };
   }
 
   /**
@@ -57,7 +94,8 @@ var ConfigLoader = function () {
       if (_fsExtra2.default.pathExistsSync(configFile)) {
         this.timer.start();
         try {
-          this.app.config = JSON.parse(_fsExtra2.default.readFileSync(configFile).toString());
+          var loaded = JSON.parse(_fsExtra2.default.readFileSync(configFile).toString());
+          this.app.config = _lodash2.default.merge(this.defaultConfig, loaded);
         } catch (error) {
           _errors2.default.configParsingError(error);
           if (this.app.config) {

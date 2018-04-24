@@ -51,7 +51,7 @@ var PugCompiler = function () {
 
     // regex for different types of templates
     this.pugType = /.pug|.jade/;
-    this.underscores = /^_/;
+    this.underscores = /^_[a-zA-Z0-9]+|\\|\/_[a-zA-Z0-9]+/;
   }
 
   _createClass(PugCompiler, [{
@@ -98,7 +98,7 @@ var PugCompiler = function () {
   }, {
     key: 'haveUnderscores',
     value: function haveUnderscores(name) {
-      return this.underscores.test(_path2.default.basename(name));
+      return this.underscores.test(name);
     }
   }, {
     key: 'saveTemplate',
