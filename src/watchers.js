@@ -23,7 +23,7 @@ export default class PostsCompiler {
     const styler = new StylesCompiler(app);
 
     // Prepare files to ignore
-    const ingnores = Constants.ignoredGlobs().concat(app.config.ignoreList || []);
+    const ingnores = Constants.ignoredGlobs().concat(app.config.ignoreList);
 
     // Start the timer
     this.timer = new Timer();

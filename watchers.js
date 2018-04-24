@@ -66,7 +66,7 @@ var PostsCompiler = function () {
       var styler = new _stylesCompiler2.default(app);
 
       // Prepare files to ignore
-      var ingnores = _constants2.default.ignoredGlobs().concat(app.config.ignoreList || []);
+      var ingnores = _constants2.default.ignoredGlobs().concat(app.config.ignoreList);
 
       // Start the timer
       this.timer = new _timer2.default();

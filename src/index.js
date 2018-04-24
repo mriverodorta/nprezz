@@ -34,7 +34,7 @@ Posts.watch();
 
 const syncOpt = {
   server: {
-    baseDir: path.normalize(`${app.cwd}/${app.config.server.path || app.config.dist || '_dist'}`),
+    baseDir: path.normalize(`${app.cwd}/${app.config.server.path || app.config.dist}`),
     index: 'index.html',
   },
   port: app.config.server.port || 3000,

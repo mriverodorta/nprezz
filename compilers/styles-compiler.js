@@ -95,21 +95,14 @@ var StylesCompiler = function () {
       var _this = this;
 
       var entry = _path2.default.resolve(this.app.config.styles.entry);
-      var output = _path2.default.resolve(_path2.default.join(this.app.config.dist || '_dist', this.app.config.styles.output));
+      var output = _path2.default.resolve(_path2.default.join(this.app.config.dist, this.app.config.styles.output));
       var sassOptions = {
         file: entry,
         includePaths: [_path2.default.dirname(entry)],
-        outputStyle: this.app.config.styles.outputStyle || 'expanded',
+        outputStyle: this.app.config.styles.outputStyle,
         imagePath: this.app.config.styles.imagePath || _path2.default.dirname(entry),
-        precision: this.app.config.styles.precision || 3,
-        errLogToConsole: this.app.config.styles.errLogToConsole || false
-      };
-      var pleeeaseOpt = {
-        autoprefixer: { browsers: ['last 2 versions', '> 2%'] },
-        rem: [this.app.config.styles.rem || '16px'],
-        pseudoElements: true,
-        mqpacker: true,
-        minifier: this.app.config.styles.minified || false
+        precision: this.app.config.styles.precision,
+        errLogToConsole: this.app.config.styles.errLogToConsole
       };
       this.timer.start();
       _nodeSass2.default.render(sassOptions, function (err, styles) {
@@ -118,7 +111,7 @@ var StylesCompiler = function () {
           return;
         }
         if (styles.css.toString('utf8')) {
-          var fixed = _pleeease2.default.process(styles.css.toString('utf8'), pleeeaseOpt);
+          var fixed = _pleeease2.default.process(styles.css.toString('utf8'), _this.app.config.styles.pleeeaseOpt);
           fixed.then(function (css) {
             _this.saveStyles(css, output);
           });

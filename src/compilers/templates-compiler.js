@@ -14,8 +14,8 @@ export default class PugCompiler {
 
     // Pug Options
     this.pugOptions = {
-      pretty: app.config.pug.pretty || true,
-      basedir: app.config.pug.basedir || './',
+      pretty: app.config.pug.pretty,
+      basedir: app.config.pug.basedir,
     };
 
     // regex for different types of templates
@@ -36,7 +36,7 @@ export default class PugCompiler {
   }
 
   compilePost(meta) {
-    const templateFile = meta.template || this.app.config.posts.template || '_single.pug';
+    const templateFile = meta.template || this.app.config.posts.template;
     // const format = this.formatFinder(templateFile);
     this.timer.start();
     if (!fs.pathExistsSync(templateFile)) {
@@ -65,7 +65,7 @@ export default class PugCompiler {
   }
 
   saveTemplate(template, file) {
-    const base = this.app.config.dist || '_dist';
+    const base = this.app.config.dist;
     const newFile = this.newPath(file, base);
     fs.ensureDirSync(path.dirname(newFile));
     fs.writeFile(newFile, template, err => {

@@ -18,7 +18,7 @@ export default class PostsCompiler {
    */
   constructor(app) {
     this.app = app;
-    this.ingnores = _.concat(Constants.ignoredGlobs(), app.config.ignoreList || []);
+    this.ingnores = _.concat(Constants.ignoredGlobs(), app.config.ignoreList);
 
     // Is the watcher ready
     this.isWatcherReady = false;
@@ -29,13 +29,13 @@ export default class PostsCompiler {
     this.templateCompiler = new TemplatesCompiler(app);
     this.matterOptions = {
       excerpt: true,
-      excerpt_separator: this.app.config.excerpt ? this.app.config.excerpt.separator || '<!--more-->' : '<!--more-->',
+      excerpt_separator: this.app.config.excerpt.separator,
     };
   }
 
   watch() {
     const watcher = chokidar.watch(
-      [`${this.app.config.posts.dir || '_posts'}/**/*.md`, `${this.app.config.posts.dir || '_posts'}/**/*.markdown`],
+      [`${this.app.config.posts.dir}/**/*.md`, `${this.app.config.posts.dir}/**/*.markdown`],
       { ignored: this.ingnores }
     );
 
@@ -179,7 +179,7 @@ export default class PostsCompiler {
   }
 
   buildPermalink() {
-    let permalink = this.thePost.permalink || this.app.config.permalink || '/post/%slug%';
+    let permalink = this.thePost.permalink || this.app.config.permalink;
     const tags = {
       year: new RegExp('%year%', 'g'),
       month: new RegExp('%month%', 'g'),
@@ -188,7 +188,7 @@ export default class PostsCompiler {
       minute: new RegExp('%minute%', 'g'),
       second: new RegExp('%second%', 'g'),
       id: new RegExp('%id%', 'g'),
-      slug: new RegExp('%slug%', 'g'),
+      title: new RegExp('%title%', 'g'),
       category: new RegExp('%category%', 'g'),
       author: new RegExp('%author%', 'g'),
     };
@@ -200,9 +200,9 @@ export default class PostsCompiler {
       minute: this.thePost.date.format('mm'),
       second: this.thePost.date.format('ss'),
       id: this.thePost.id,
-      slug: this.thePost.slug,
+      title: this.thePost.slug,
       category: slug(
-        typeof this.thePost.categories === 'string' ? this.thePost.categories : this.thePost.categories[0]
+        typeof this.thePost.categories === 'string' ? this.thePost.categories : this.thePost.categories[0].toLowerCase()
       ),
       author: slug(this.thePost.author.name),
     };

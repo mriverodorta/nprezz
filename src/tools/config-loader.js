@@ -29,12 +29,22 @@ export default class ConfigLoader {
         outputStyle: 'expanded',
         minified: false,
         errLogToConsole: false,
+        pleeeaseOpt: {
+          autoprefixer: { browsers: ['last 2 versions', '> 2%'] },
+          rem: ['16px'],
+          pseudoElements: true,
+          mqpacker: true,
+          minifier: this.defaultConfig.styles.minified || false,
+        },
       },
-      ignoreList: ['_dist'],
+      ignoreList: [],
       posts: {
         dir: '_posts',
         template: '_single.pug',
-        permalink: '/blog/%year%/%month%/%day%/%slug%',
+        permalink: '/blog/%title%',
+      },
+      excerpt: {
+        separator: '<!--more-->',
       },
       server: {
         port: 4000,

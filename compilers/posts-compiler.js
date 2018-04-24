@@ -67,7 +67,7 @@ var PostsCompiler = function () {
     _classCallCheck(this, PostsCompiler);
 
     this.app = app;
-    this.ingnores = _lodash2.default.concat(_constants2.default.ignoredGlobs(), app.config.ignoreList || []);
+    this.ingnores = _lodash2.default.concat(_constants2.default.ignoredGlobs(), app.config.ignoreList);
 
     // Is the watcher ready
     this.isWatcherReady = false;
@@ -78,7 +78,7 @@ var PostsCompiler = function () {
     this.templateCompiler = new _templatesCompiler2.default(app);
     this.matterOptions = {
       excerpt: true,
-      excerpt_separator: this.app.config.excerpt ? this.app.config.excerpt.separator || '<!--more-->' : '<!--more-->'
+      excerpt_separator: this.app.config.excerpt.separator
     };
   }
 
@@ -87,7 +87,7 @@ var PostsCompiler = function () {
     value: function watch() {
       var _this = this;
 
-      var watcher = _chokidar2.default.watch([(this.app.config.posts.dir || '_posts') + '/**/*.md', (this.app.config.posts.dir || '_posts') + '/**/*.markdown'], { ignored: this.ingnores });
+      var watcher = _chokidar2.default.watch([this.app.config.posts.dir + '/**/*.md', this.app.config.posts.dir + '/**/*.markdown'], { ignored: this.ingnores });
 
       watcher.on('all', function (e, file) {
         // if (!this.isWatcherReady) {
@@ -240,7 +240,7 @@ var PostsCompiler = function () {
   }, {
     key: 'buildPermalink',
     value: function buildPermalink() {
-      var permalink = this.thePost.permalink || this.app.config.permalink || '/post/%slug%';
+      var permalink = this.thePost.permalink || this.app.config.permalink;
       var tags = {
         year: new RegExp('%year%', 'g'),
         month: new RegExp('%month%', 'g'),
@@ -249,7 +249,7 @@ var PostsCompiler = function () {
         minute: new RegExp('%minute%', 'g'),
         second: new RegExp('%second%', 'g'),
         id: new RegExp('%id%', 'g'),
-        slug: new RegExp('%slug%', 'g'),
+        title: new RegExp('%title%', 'g'),
         category: new RegExp('%category%', 'g'),
         author: new RegExp('%author%', 'g')
       };
@@ -261,8 +261,8 @@ var PostsCompiler = function () {
         minute: this.thePost.date.format('mm'),
         second: this.thePost.date.format('ss'),
         id: this.thePost.id,
-        slug: this.thePost.slug,
-        category: (0, _slug2.default)(typeof this.thePost.categories === 'string' ? this.thePost.categories : this.thePost.categories[0]),
+        title: this.thePost.slug,
+        category: (0, _slug2.default)(typeof this.thePost.categories === 'string' ? this.thePost.categories : this.thePost.categories[0].toLowerCase()),
         author: (0, _slug2.default)(this.thePost.author.name)
       };
 

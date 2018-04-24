@@ -52,21 +52,14 @@ export default class StylesCompiler {
    */
   compileSASS() {
     const entry = path.resolve(this.app.config.styles.entry);
-    const output = path.resolve(path.join(this.app.config.dist || '_dist', this.app.config.styles.output));
+    const output = path.resolve(path.join(this.app.config.dist, this.app.config.styles.output));
     const sassOptions = {
       file: entry,
       includePaths: [path.dirname(entry)],
-      outputStyle: this.app.config.styles.outputStyle || 'expanded',
+      outputStyle: this.app.config.styles.outputStyle,
       imagePath: this.app.config.styles.imagePath || path.dirname(entry),
-      precision: this.app.config.styles.precision || 3,
-      errLogToConsole: this.app.config.styles.errLogToConsole || false,
-    };
-    const pleeeaseOpt = {
-      autoprefixer: { browsers: ['last 2 versions', '> 2%'] },
-      rem: [this.app.config.styles.rem || '16px'],
-      pseudoElements: true,
-      mqpacker: true,
-      minifier: this.app.config.styles.minified || false,
+      precision: this.app.config.styles.precision,
+      errLogToConsole: this.app.config.styles.errLogToConsole,
     };
     this.timer.start();
     sassCompiler.render(sassOptions, (err, styles) => {
@@ -75,7 +68,7 @@ export default class StylesCompiler {
         return;
       }
       if (styles.css.toString('utf8')) {
-        const fixed = pleeease.process(styles.css.toString('utf8'), pleeeaseOpt);
+        const fixed = pleeease.process(styles.css.toString('utf8'), this.app.config.styles.pleeeaseOpt);
         fixed.then(css => {
           this.saveStyles(css, output);
         });

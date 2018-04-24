@@ -45,8 +45,8 @@ var PugCompiler = function () {
 
     // Pug Options
     this.pugOptions = {
-      pretty: app.config.pug.pretty || true,
-      basedir: app.config.pug.basedir || './'
+      pretty: app.config.pug.pretty,
+      basedir: app.config.pug.basedir
     };
 
     // regex for different types of templates
@@ -70,7 +70,7 @@ var PugCompiler = function () {
   }, {
     key: 'compilePost',
     value: function compilePost(meta) {
-      var templateFile = meta.template || this.app.config.posts.template || '_single.pug';
+      var templateFile = meta.template || this.app.config.posts.template;
       // const format = this.formatFinder(templateFile);
       this.timer.start();
       if (!_fsExtra2.default.pathExistsSync(templateFile)) {
@@ -105,7 +105,7 @@ var PugCompiler = function () {
     value: function saveTemplate(template, file) {
       var _this = this;
 
-      var base = this.app.config.dist || '_dist';
+      var base = this.app.config.dist;
       var newFile = this.newPath(file, base);
       _fsExtra2.default.ensureDirSync(_path2.default.dirname(newFile));
       _fsExtra2.default.writeFile(newFile, template, function (err) {
