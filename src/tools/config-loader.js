@@ -34,7 +34,7 @@ export default class ConfigLoader {
           rem: ['16px'],
           pseudoElements: true,
           mqpacker: true,
-          minifier: this.defaultConfig.styles.minified || false,
+          minifier: false,
         },
       },
       ignoreList: [],

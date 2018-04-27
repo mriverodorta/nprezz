@@ -81,7 +81,8 @@ var PostsCompiler = function () {
         // Prepare list of files for firs time build
         if (!_this.isWatcherReady && _path2.default.extname(file) !== '' && !_this.underscores.test(file)) {
           _this.firstTimeFiles.push(file);
-        } else {
+        }
+        if (_this.isWatcherReady) {
           styler.compile(file);
           templates.compile(file);
         }
@@ -92,9 +93,9 @@ var PostsCompiler = function () {
         _this.timer.finish();
         _logger2.default.success('Watcher\'s ready', _this.timer.getFormattedLapse());
         _this.firstTimeFiles.forEach(function (file) {
-          styler.compile(file);
           templates.compile(file);
         });
+        styler.compile();
       });
     }
   }]);

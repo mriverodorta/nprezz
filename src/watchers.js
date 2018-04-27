@@ -38,7 +38,8 @@ export default class PostsCompiler {
       // Prepare list of files for firs time build
       if (!this.isWatcherReady && path.extname(file) !== '' && !this.underscores.test(file)) {
         this.firstTimeFiles.push(file);
-      } else {
+      }
+      if (this.isWatcherReady) {
         styler.compile(file);
         templates.compile(file);
       }
@@ -49,9 +50,9 @@ export default class PostsCompiler {
       this.timer.finish();
       Log.success(`Watcher's ready`, this.timer.getFormattedLapse());
       this.firstTimeFiles.forEach(file => {
-        styler.compile(file);
         templates.compile(file);
       });
+      styler.compile();
     });
   }
 }
